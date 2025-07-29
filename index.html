@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Custom Shortcuts</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .tile {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .tile:hover {
+      transform: scale(1.05);
+      background: #2a2a2a;
+    }
+
+    .tile img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+
+    .tile a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+    }
+
+    .plus-tile {
+      font-size: 40px;
+      line-height: 70px;
+      color: #aaa;
+    }
+
+    /* Popup */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 300px;
+      padding: 20px;
+      background: #1f1f1f;
+      border-radius: 10px;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .popup input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      background: #2c2c2c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .popup button {
+      width: 100%;
+      padding: 10px;
+      background: #3a3a3a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .popup button:hover {
+      background: #505050;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌐 My Shortcuts</h1>
+
+  <div class="grid" id="shortcutGrid">
+    <!-- Example shortcuts -->
+    <div class="tile">
+      <a href="https://www.google.com" target="_blank">
+        <img src="https://www.google.com/favicon.ico" alt="Google" />
+        Google
+      </a>
+    </div>
+
+    <div class="tile">
+      <a href="https://www.youtube.com" target="_blank">
+        <img src="https://www.youtube.com/s/desktop/e1b14f4f/img/favicon.ico" alt="YouTube" />
+        YouTube
+      </a>
+    </div>
+
+    <!-- Plus Button -->
+    <div class="tile" onclick="openPopup()">
+      <div class="plus-tile">＋</div>
+    </div>
+  </div>
+
+  <!-- Popup Form -->
+  <div class="popup" id="popup">
+    <h3>Add Shortcut</h3>
+    <input type="text" id="siteName" placeholder="Name" />
+    <input type="url" id="siteURL" placeholder="https://example.com" />
+    <input type="url" id="siteIcon" placeholder="Icon URL (favicon)" />
+    <button onclick="addShortcut()">Add</button>
+    <button onclick="closePopup()">Cancel</button>
+  </div>
+
+  <script>
+    function openPopup() {
+      document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+    }
+
+    function addShortcut() {
+      const name = document.getElementById('siteName').value.trim();
+      const url = document.getElementById('siteURL').value.trim();
+      const icon = document.getElementById('siteIcon').value.trim();
+
+      if (!name || !url || !icon) {
+        alert('Please fill all fields.');
+        return;
+      }
+
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.innerHTML = `
+        <a href="${url}" target="_blank">
+          <img src="${icon}" alt="${name}" />
+          ${name}
+        </a>
+      `;
+
+      const grid = document.getElementById('shortcutGrid');
+      const plusTile = grid.lastElementChild;
+      grid.insertBefore(tile, plusTile);
+
+      closePopup();
+
+      // Reset form
+      document.getElementById('siteName').value = '';
+      document.getElementById('siteURL').value = '';
+      document.getElementById('siteIcon').value = '';
+    }
+  </script>
+</body>
+</html>
