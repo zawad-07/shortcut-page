@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Custom Shortcuts</title>
+  <title>Custom Shortcuts - Minimal</title>
   <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-size: cover;
       background-position: center;
       color: white;
-      padding: 20px;
+      padding: 20px 15px 70px; /* bottom padding for bg icon */
       transition: background-image 0.5s ease-in-out;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-y: auto;
+      user-select: none;
     }
     h1 {
       margin: 10px 0 10px;
       font-weight: 700;
-      font-size: 2.8rem;
+      font-size: 2.4rem;
       user-select: none;
     }
     .search-bar {
@@ -36,121 +42,136 @@
     }
     .search-bar input[type="text"] {
       width: 100%;
-      padding: 12px 18px;
+      padding: 10px 16px;
       border: none;
       border-radius: 30px;
-      font-size: 18px;
-      box-sizing: border-box;
+      font-size: 16px;
       outline: none;
       color: #121212;
       font-weight: 600;
+      user-select: text;
     }
+
     .grid {
       width: 100%;
-      max-width: 900px;
+      max-width: 1000px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
       margin-bottom: 40px;
       flex-grow: 1;
       justify-items: center;
     }
     .tile {
-      background: rgba(30, 30, 30, 0.85);
+      background: rgba(30, 30, 30, 0.75);
       border-radius: 12px;
-      padding: 12px 10px;
+      padding: 8px 6px;
       text-align: center;
       transition: transform 0.2s ease;
       position: relative;
-      width: 120px;
+      width: 90px;
+      height: 90px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       user-select: none;
     }
     .tile:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
       background: rgba(50, 50, 50, 0.85);
     }
     .tile img {
-      width: 40px;
-      height: 40px;
-      margin-bottom: 8px;
-      user-select: none;
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 6px;
       pointer-events: none;
+      user-select: none;
     }
     .tile a {
       color: white;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 12px;
       display: block;
-      overflow-wrap: break-word;
+      word-break: break-word;
       user-select: text;
     }
     .actions {
-      margin-top: 6px;
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: center;
       gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .tile:hover .actions {
+      opacity: 1;
     }
     .actions button {
       background: #444;
       border: none;
       color: white;
-      padding: 4px 8px;
-      font-size: 12px;
+      padding: 2px 5px;
+      font-size: 10px;
       border-radius: 5px;
       cursor: pointer;
       user-select: none;
+      line-height: 1;
       transition: background-color 0.2s ease;
     }
     .actions button:hover {
       background: #666;
     }
     .plus-tile {
-      font-size: 40px;
+      font-size: 36px;
       color: #999;
       cursor: pointer;
-      padding-top: 18px;
-      user-select: none;
-      width: 120px;
-      height: 86px;
+      width: 90px;
+      height: 90px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(30, 30, 30, 0.7);
+      background: rgba(30, 30, 30, 0.6);
       border-radius: 12px;
+      user-select: none;
       transition: background-color 0.2s ease;
     }
     .plus-tile:hover {
       background: rgba(50, 50, 50, 0.9);
     }
+
+    /* Popup */
     .popup {
       display: none;
       position: fixed;
       top: 50%;
       left: 50%;
-      width: 320px;
-      padding: 22px;
+      width: 280px;
+      padding: 18px 20px;
       background: #1f1f1f;
       border-radius: 10px;
       transform: translate(-50%, -50%);
-      z-index: 1000;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      z-index: 1001;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
       user-select: none;
+      font-size: 14px;
     }
     .popup input {
       width: 100%;
-      padding: 10px;
+      padding: 8px 12px;
       margin: 8px 0;
       background: #2c2c2c;
       color: white;
       border: none;
       border-radius: 6px;
-      font-size: 15px;
+      font-size: 14px;
       box-sizing: border-box;
     }
     .popup button {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin-top: 12px;
       background: #333;
       color: white;
@@ -163,55 +184,106 @@
     .popup button:hover {
       background: #555;
     }
-    /* Background changer */
-    .bg-changer {
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 30px;
-      text-align: center;
-      user-select: none;
-    }
-    .bg-changer label {
-      font-size: 16px;
-      margin-right: 10px;
-      user-select: none;
-    }
-    .bg-changer input[type="url"] {
-      width: 65%;
-      max-width: 400px;
-      padding: 10px;
-      border-radius: 30px;
-      border: none;
-      font-size: 14px;
-      box-sizing: border-box;
-      outline: none;
-      vertical-align: middle;
-      color: #121212;
-      font-weight: 600;
-    }
-    .bg-changer button {
-      padding: 10px 16px;
-      border-radius: 30px;
-      border: none;
-      background: #444;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      vertical-align: middle;
-      margin-left: 8px;
-      transition: background-color 0.2s ease;
-      user-select: none;
-    }
-    .bg-changer button:hover {
-      background: #666;
-    }
-    /* Overlay for popup close */
+
+    /* Overlay for popup */
     #overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
       display: none;
-      z-index: 999;
+      z-index: 1000;
+    }
+
+    /* Background icon button bottom right */
+    #bgChangerBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      background: rgba(40, 40, 40, 0.85);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      z-index: 1100;
+    }
+    #bgChangerBtn:hover {
+      background: rgba(60, 60, 60, 0.95);
+    }
+    #bgChangerBtn svg {
+      fill: white;
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Background URL popup */
+    #bgPopup {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      background: #222;
+      border-radius: 10px;
+      padding: 15px 18px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+      z-index: 1101;
+      font-size: 14px;
+      user-select: text;
+    }
+    #bgPopup input {
+      width: calc(100% - 100px);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      outline: none;
+    }
+    #bgPopup button {
+      width: 80px;
+      padding: 6px 10px;
+      margin-left: 8px;
+      border-radius: 6px;
+      border: none;
+      background: #444;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+    #bgPopup button:hover {
+      background: #666;
+    }
+
+    /* Responsive text sizes */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .search-bar input[type="text"] {
+        font-size: 14px;
+      }
+      .tile {
+        width: 75px;
+        height: 75px;
+        padding: 6px 4px;
+      }
+      .tile img {
+        width: 24px;
+        height: 24px;
+      }
+      .tile a {
+        font-size: 11px;
+      }
+      .actions button {
+        font-size: 9px;
+        padding: 2px 4px;
+      }
     }
   </style>
 </head>
@@ -220,21 +292,14 @@
   <h1>ZAWAD RAHMAN</h1>
 
   <div class="search-bar" aria-label="Google search">
-    <form id="searchForm" action="https://www.google.com/search" method="GET" target="_blank" role="search">
+    <form id="searchForm" action="https://www.google.com/search" method="GET" role="search">
       <input type="text" name="q" placeholder="Search Google..." autocomplete="off" aria-label="Search Google" />
     </form>
   </div>
 
-  <div class="bg-changer" aria-label="Background image changer">
-    <label for="bgUrlInput">Background Image URL:</label>
-    <input id="bgUrlInput" type="url" placeholder="https://example.com/image.jpg" />
-    <button id="setBgBtn">Set Background</button>
-    <button id="clearBgBtn" title="Remove Background Image" style="margin-left: 10px;">Clear</button>
-  </div>
-
   <div class="grid" id="shortcutGrid" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Popup for add/edit shortcut -->
+  <!-- Add/Edit Shortcut Popup -->
   <div class="popup" id="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
     <h2 id="popupTitle" style="margin-top:0; margin-bottom: 15px; font-weight: 600;">Add Shortcut</h2>
     <input type="text" id="siteName" placeholder="Shortcut Name" aria-label="Shortcut Name" />
@@ -245,6 +310,21 @@
 
   <div id="overlay"></div>
 
+  <!-- Background changer icon -->
+  <div id="bgChangerBtn" title="Change Background Image" aria-label="Change Background Image" role="button" tabindex="0">
+    <!-- Simple paintbrush icon SVG -->
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+    </svg>
+  </div>
+
+  <!-- Background URL popup -->
+  <div id="bgPopup" aria-label="Background image URL input">
+    <input id="bgUrlInput" type="url" placeholder="Enter image URL..." aria-label="Background image URL" />
+    <button id="setBgBtn">Set</button>
+    <button id="clearBgBtn" title="Clear Background Image" style="margin-left:8px;">Clear</button>
+  </div>
+
 <script>
   let editIndex = null;
   const popup = document.getElementById("popup");
@@ -252,14 +332,14 @@
   const nameInput = document.getElementById("siteName");
   const urlInput = document.getElementById("siteURL");
   const grid = document.getElementById("shortcutGrid");
+
+  const bgChangerBtn = document.getElementById("bgChangerBtn");
+  const bgPopup = document.getElementById("bgPopup");
   const bgUrlInput = document.getElementById("bgUrlInput");
   const setBgBtn = document.getElementById("setBgBtn");
   const clearBgBtn = document.getElementById("clearBgBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const popupTitle = document.getElementById("popupTitle");
 
-  // Get favicon from domain using Google service
+  // Get favicon URL from domain
   function getFavicon(url) {
     try {
       const domain = new URL(url).hostname;
@@ -269,7 +349,7 @@
     }
   }
 
-  // Load shortcuts from localStorage & render grid
+  // Load shortcuts and render tiles
   function loadShortcuts() {
     const data = JSON.parse(localStorage.getItem("shortcuts") || "[]");
     grid.innerHTML = "";
@@ -278,13 +358,13 @@
       const tile = document.createElement("div");
       tile.className = "tile";
       tile.innerHTML = `
-        <a href="${item.url}" target="_blank" rel="noopener noreferrer" tabindex="0">
+        <a href="${item.url}" target="_self" rel="noopener noreferrer" tabindex="0" title="${item.name}">
           <img src="${getFavicon(item.url)}" alt="Favicon for ${item.name}" />
           ${item.name}
         </a>
         <div class="actions">
-          <button aria-label="Edit ${item.name}" onclick="editShortcut(${index})">Edit</button>
-          <button aria-label="Delete ${item.name}" onclick="deleteShortcut(${index})">Delete</button>
+          <button aria-label="Edit ${item.name}" onclick="editShortcut(${index})">✎</button>
+          <button aria-label="Delete ${item.name}" onclick="deleteShortcut(${index})">×</button>
         </div>
       `;
       grid.appendChild(tile);
@@ -304,6 +384,7 @@
     grid.appendChild(addTile);
   }
 
+  // Open add/edit popup
   function openPopup(editIdx = null) {
     editIndex = editIdx;
     popup.style.display = "block";
@@ -312,22 +393,24 @@
       const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "[]");
       nameInput.value = shortcuts[editIdx].name;
       urlInput.value = shortcuts[editIdx].url;
-      popupTitle.textContent = "Edit Shortcut";
+      popup.querySelector('h2').textContent = "Edit Shortcut";
     } else {
       nameInput.value = "";
       urlInput.value = "";
-      popupTitle.textContent = "Add Shortcut";
+      popup.querySelector('h2').textContent = "Add Shortcut";
     }
     nameInput.focus();
   }
 
+  // Close popup
   function closePopup() {
     popup.style.display = "none";
     overlay.style.display = "none";
     editIndex = null;
   }
 
-  saveBtn.addEventListener("click", () => {
+  // Save shortcut
+  document.getElementById("saveBtn").addEventListener("click", () => {
     const name = nameInput.value.trim();
     const url = urlInput.value.trim();
 
@@ -335,7 +418,6 @@
       alert("Please fill both fields.");
       return;
     }
-    // Validate URL format
     try {
       new URL(url);
     } catch {
@@ -348,6 +430,10 @@
     if (editIndex !== null) {
       shortcuts[editIndex] = { name, url };
     } else {
+      if(shortcuts.length >= 50){
+        alert("Maximum 50 shortcuts allowed.");
+        return;
+      }
       shortcuts.push({ name, url });
     }
 
@@ -356,13 +442,16 @@
     loadShortcuts();
   });
 
-  cancelBtn.addEventListener("click", closePopup);
+  // Cancel popup
+  document.getElementById("cancelBtn").addEventListener("click", closePopup);
   overlay.addEventListener("click", closePopup);
 
+  // Edit shortcut
   function editShortcut(index) {
     openPopup(index);
   }
 
+  // Delete shortcut
   function deleteShortcut(index) {
     if (confirm("Delete this shortcut?")) {
       const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "[]");
@@ -372,7 +461,7 @@
     }
   }
 
-  // Background image handling
+  // Background image functions
   function loadBackground() {
     const bgUrl = localStorage.getItem("bgImage");
     if (bgUrl) {
@@ -390,7 +479,6 @@
       alert("Please enter a background image URL.");
       return;
     }
-    // Basic URL validation
     try {
       new URL(url);
     } catch {
@@ -399,14 +487,34 @@
     }
     localStorage.setItem("bgImage", url);
     loadBackground();
+    bgPopup.style.display = "none";
   });
 
   clearBgBtn.addEventListener("click", () => {
     localStorage.removeItem("bgImage");
     loadBackground();
+    bgPopup.style.display = "none";
   });
 
-  // Load all on start
+  // Toggle background popup
+  function toggleBgPopup() {
+    if(bgPopup.style.display === "block") {
+      bgPopup.style.display = "none";
+    } else {
+      bgPopup.style.display = "block";
+      bgUrlInput.focus();
+    }
+  }
+
+  bgChangerBtn.addEventListener("click", toggleBgPopup);
+  bgChangerBtn.addEventListener("keypress", e => {
+    if(e.key === "Enter" || e.key === " ") {
+      toggleBgPopup();
+      e.preventDefault();
+    }
+  });
+
+  // Initial load
   loadShortcuts();
   loadBackground();
 </script>
