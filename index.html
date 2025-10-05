@@ -7,6 +7,7 @@
   <style>
     body {
       margin: 0;
+      display: flex;
       justify-content: center;
       font-family: Arial, sans-serif;
       background-size: cover;
@@ -23,9 +24,14 @@
       text-align: center;
       font-size: 32px;
     }
+    .div1 {
+      display: flex;
+      justify-content: center;
+      height: 100vh;
+    }
     .search-container {
       display: flex;
-      align-items: right;
+      align-items: center;
       background-color: #1e1e1e;
       border-radius: 25px;
       padding: 8px 15px;
@@ -123,7 +129,7 @@
 </head>
 <body>
   <h1>ZAWAD RAHMAN</h1>
-   <div>
+   <div class="div1">
     <form action="https://www.google.com/search" method="GET" class="search-container">
       <input type="text" name="q" placeholder="Search Google...">
       <button type="submit">🔍</button>
@@ -242,6 +248,7 @@
   </script>
 </body>
 </html>
+
 
 
 
