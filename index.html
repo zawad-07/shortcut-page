@@ -612,7 +612,8 @@
       grid.appendChild(tile);
     });
 
-    grid.style.height = (maxY + TILE_H + GAP + 60) + 'px';
+    const minGridH = window.innerHeight - grid.getBoundingClientRect().top + 200;
+    grid.style.height = Math.max(minGridH, maxY + TILE_H + GAP + 200) + 'px';
   }
 
   // ─── Drag ─────────────────────────────────────────────────────────────────
@@ -641,15 +642,13 @@
         const dy = pt.clientY - startY;
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { moved = true; tile._wasDragged = true; }
 
-        const newX = Math.max(0, origLeft + dx);
-        const newY = Math.max(0, origTop + dy);
+        const maxX = grid.clientWidth - TILE_W - 60;
+        const maxY = grid.clientHeight - TILE_H - 80;
+        const newX = Math.min(maxX, Math.max(0, origLeft + dx));
+        const newY = Math.min(maxY, Math.max(0, origTop + dy));
         tile.style.left = newX + 'px';
         tile.style.top  = newY + 'px';
         positions[index] = { x: newX, y: newY };
-
-        // Expand grid height if needed
-        const needed = newY + TILE_H + GAP + 60;
-        if (parseInt(grid.style.height) < needed) grid.style.height = needed + 'px';
       };
 
       const onUp = () => {
