@@ -138,7 +138,7 @@
       border-radius: 16px;
       text-align: center;
       padding: 14px 8px 10px;
-      cursor: grab;
+      cursor: default;
       backdrop-filter: blur(10px);
       transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
       user-select: none;
@@ -205,6 +205,45 @@
 
     .tile-actions button:hover { background: rgba(255,255,255,0.18); color: #fff; }
     .tile-actions .del-btn:hover { background: rgba(255,94,125,0.25); color: var(--danger); border-color: var(--danger); }
+
+    /* DRAG HANDLE */
+    .drag-handle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: grab;
+      border-radius: 6px;
+      padding: 3px 5px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.2s;
+      height: 100%;
+      min-height: 24px;
+    }
+
+    .drag-handle:active { cursor: grabbing; }
+
+    .drag-handle .dot-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .drag-handle .dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      transition: background 0.2s;
+    }
+
+    .drag-handle:hover .dot { background: var(--accent); }
+
+    .drag-handle:hover {
+      background: rgba(125,249,194,0.12);
+      border-color: rgba(125,249,194,0.3);
+    }
 
     /* ADD TILE */
     .plus-tile {
@@ -538,6 +577,11 @@
         <img src="${getFavicon(sc.url)}" alt="" draggable="false" />
         <div class="tile-name">${sc.name}</div>
         <div class="tile-actions">
+          <div class="drag-handle" title="Drag to move">
+            <div class="dot-row"><span class="dot"></span><span class="dot"></span></div>
+            <div class="dot-row"><span class="dot"></span><span class="dot"></span></div>
+            <div class="dot-row"><span class="dot"></span><span class="dot"></span></div>
+          </div>
           <button class="edit-btn" title="Edit">✏️</button>
           <button class="del-btn" title="Delete">🗑️</button>
         </div>
@@ -555,7 +599,7 @@
         e.stopPropagation(); deleteShortcut(i);
       });
 
-      makeDraggable(tile, i);
+      makeDraggable(tile, tile.querySelector('.drag-handle'), i);
       grid.appendChild(tile);
     });
 
@@ -574,11 +618,10 @@
   }
 
   // ─── Drag ─────────────────────────────────────────────────────────────────
-  function makeDraggable(tile, index) {
+  function makeDraggable(tile, handle, index) {
     let startX, startY, origLeft, origTop, dragging = false, moved = false;
 
     const onDown = (e) => {
-      if (e.target.tagName === 'BUTTON') return;
       e.preventDefault();
       dragging = true;
       moved = false;
@@ -628,8 +671,8 @@
       document.addEventListener('touchend', onUp);
     };
 
-    tile.addEventListener('mousedown', onDown);
-    tile.addEventListener('touchstart', onDown, { passive: false });
+    handle.addEventListener('mousedown', onDown);
+    handle.addEventListener('touchstart', onDown, { passive: false });
   }
 
   // ─── Modal ────────────────────────────────────────────────────────────────
