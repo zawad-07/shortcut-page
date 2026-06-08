@@ -4,264 +4,747 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zawad's Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --glass: rgba(255,255,255,0.07);
+      --glass-border: rgba(255,255,255,0.12);
+      --accent: #7DF9C2;
+      --accent2: #5B8DEF;
+      --danger: #FF5E7D;
+      --text: #f0f0f0;
+      --muted: #888;
+      --modal-bg: rgba(10,10,20,0.92);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      justify-content: center;
-      font-family: Arial, sans-serif;
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
       background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
+      background-position: center;
       background-attachment: fixed;
-      background-color: #000;
-      transition: background-image 0.5s;
-      color: white;
-      padding: 0;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    h1 {
-      color: #2F2F2F;
-      margin-top: 40px;
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      padding: 40px 20px 80px;
+    }
+
+    /* HEADER */
+    header {
       text-align: center;
-      font-size: 32px;
+      margin-bottom: 32px;
     }
-    .div1 {
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(28px, 5vw, 52px);
+      letter-spacing: 0.12em;
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* SEARCH */
+    .search-wrap {
       display: flex;
       justify-content: center;
+      margin-bottom: 40px;
     }
+
     .search-container {
       display: flex;
       align-items: center;
-      background-color: #1e1e1e;
-      border-radius: 25px;
-      padding: 8px 15px;
-      max-width: 260px; 
-      width: 100%;      
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 10px 20px;
+      width: 100%;
+      max-width: 420px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
-  
-    .search-container input[type="text"] {
+
+    .search-container:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125,249,194,0.12);
+    }
+
+    .search-container input {
+      flex: 1;
       background: transparent;
       border: none;
       outline: none;
-      color: #fff;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
-      width: 250px;
     }
-  
-    .search-container input::placeholder {
-      color: #aaa;
-    }
-  
+
+    .search-container input::placeholder { color: var(--muted); }
+
     .search-container button {
       background: none;
       border: none;
-      color: #fff;
-      cursor: pointer;
+      color: var(--muted);
       font-size: 18px;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 0;
+      line-height: 1;
     }
-  
-    .search-container button:hover {
-      color: #0f9d58; /* Google green accent */
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 15px;
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-    }
-    .tile {
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 12px;
-      text-align: center;
-      padding: 10px;
-      transition: 0.2s;
+
+    .search-container button:hover { color: var(--accent); }
+
+    /* GRID / DRAG AREA */
+    #shortcutGrid {
       position: relative;
+      min-height: 300px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
+
+    /* TILES */
+    .tile {
+      position: absolute;
+      width: 110px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      text-align: center;
+      padding: 14px 8px 10px;
+      cursor: grab;
+      backdrop-filter: blur(10px);
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      user-select: none;
+    }
+
     .tile:hover {
-      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
+
+    .tile.dragging {
+      cursor: grabbing;
+      opacity: 0.85;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+      transform: scale(1.06);
+      z-index: 9999 !important;
+    }
+
     .tile img {
       width: 32px;
       height: 32px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      border-radius: 6px;
     }
+
     .tile a {
       text-decoration: none;
-      color: white;
-      font-size: 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      display: block;
+      line-height: 1.3;
+      pointer-events: none; /* let drag handle it; we open via click separately */
     }
-    .actions {
-      margin-top: 5px;
+
+    .tile-name {
+      font-size: 12px;
+      color: var(--text);
+      margin-top: 2px;
+      word-break: break-word;
     }
-    .actions button {
-      background: transparent;
-      border: none;
-      color: #ddd;
-      font-size: 10px;
-      margin: 0 2px;
+
+    .tile-actions {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tile:hover .tile-actions { opacity: 1; }
+
+    .tile-actions button {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #ccc;
+      font-size: 11px;
+      border-radius: 6px;
+      padding: 3px 7px;
       cursor: pointer;
+      transition: background 0.2s, color 0.2s;
     }
+
+    .tile-actions button:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .tile-actions .del-btn:hover { background: rgba(255,94,125,0.25); color: var(--danger); border-color: var(--danger); }
+
+    /* ADD TILE */
     .plus-tile {
-      font-size: 28px;
-      color: #aaa;
+      width: 110px;
+      position: absolute;
+      background: rgba(125,249,194,0.05);
+      border: 1.5px dashed rgba(125,249,194,0.3);
+      border-radius: 16px;
+      text-align: center;
+      padding: 14px 8px 10px;
       cursor: pointer;
-      padding-top: 25px;
+      transition: background 0.2s, border-color 0.2s;
+      backdrop-filter: blur(10px);
     }
+
+    .plus-tile:hover {
+      background: rgba(125,249,194,0.1);
+      border-color: var(--accent);
+    }
+
+    .plus-tile .plus-icon {
+      font-size: 26px;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .plus-tile .plus-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #12121e;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 36px 32px 28px;
+      width: 100%;
+      max-width: 380px;
+      position: relative;
+      transform: translateY(24px) scale(0.96);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .modal p.sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .modal-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .modal-field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125,249,194,0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0a0f;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      color: var(--muted);
+    }
+
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    /* FAVICON PREVIEW IN MODAL */
+    .favicon-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      min-height: 44px;
+    }
+
+    .favicon-preview img { width: 24px; height: 24px; border-radius: 4px; }
+    .favicon-preview span { font-size: 12px; color: var(--muted); }
+
+    /* BG BUTTON */
     #bg-btn {
       position: fixed;
-      bottom: 15px;
-      right: 15px;
-      background: rgba(0,0,0,0.5);
-      border: none;
+      bottom: 20px;
+      right: 20px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 46px;
+      height: 46px;
       font-size: 20px;
       color: white;
       cursor: pointer;
+      z-index: 500;
+      backdrop-filter: blur(10px);
+      transition: background 0.2s, transform 0.2s;
     }
-    #bg-input {
-      display: none;
+
+    #bg-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.08); }
+    #bg-input { display: none; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 76px;
+      right: 20px;
+      background: var(--accent);
+      color: #0a0a0f;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 50px;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
     }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
   </style>
 </head>
 <body>
-  <h1>ZAWAD RAHMAN</h1>
-   <div class="div1">
+
+<div class="page-wrap">
+  <header>
+    <h1>ZAWAD RAHMAN</h1>
+    <p>Personal Dashboard</p>
+  </header>
+
+  <div class="search-wrap">
     <form action="https://www.google.com/search" method="GET" class="search-container">
-      <input type="text" name="q" placeholder="Search Google...">
+      <input type="text" name="q" placeholder="Search Google…" autofocus>
       <button type="submit">🔍</button>
     </form>
   </div>
 
-  <div class="grid" id="shortcutGrid">
-    <!-- Shortcuts will appear here -->
+  <div id="shortcutGrid"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">×</button>
+    <h2 id="modalTitle">Add Shortcut</h2>
+    <p class="sub" id="modalSub">Add a new site to your dashboard</p>
+
+    <div class="modal-field">
+      <label>Site Name</label>
+      <input type="text" id="inputName" placeholder="e.g. GitHub" autocomplete="off">
+    </div>
+
+    <div class="modal-field">
+      <label>URL</label>
+      <input type="text" id="inputUrl" placeholder="https://example.com" autocomplete="off">
+    </div>
+
+    <div class="favicon-preview" id="faviconPreview">
+      <span>Enter a URL to preview favicon</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-primary" id="modalSave">Save Shortcut</button>
+    </div>
   </div>
+</div>
 
-  <button id="bg-btn" onclick="document.getElementById('bg-input').click()">🖼️</button>
-  <input type="file" id="bg-input" accept="image/*" onchange="changeBackground(this)" />
+<button id="bg-btn" onclick="document.getElementById('bg-input').click()" title="Change background">🖼️</button>
+<input type="file" id="bg-input" accept="image/*" onchange="changeBackground(this)" />
+<div class="toast" id="toast"></div>
 
-  <script>
-    const grid = document.getElementById("shortcutGrid");
+<script>
+  const grid = document.getElementById('shortcutGrid');
+  const TILE_W = 110, TILE_H = 120, GAP = 16, COLS_BASE = 8;
 
-    let shortcuts = JSON.parse(localStorage.getItem("shortcuts")) || [
-      { name: "YouTube", url: "https://youtube.com" },
-      { name: "ChatGPT", url: "https://chat.openai.com" },
-      { name: "GitHub", url: "https://github.com" },
-      { name: "Coursera", url: "https://coursera.org" },
-      { name: "Gmail", url: "https://mail.google.com" },
-    ];
+  // ─── State ───────────────────────────────────────────────────────────────
+  let shortcuts = JSON.parse(localStorage.getItem('shortcuts_v2')) || [
+    { name: 'YouTube',  url: 'https://youtube.com'        },
+    { name: 'ChatGPT',  url: 'https://chat.openai.com'    },
+    { name: 'GitHub',   url: 'https://github.com'         },
+    { name: 'Coursera', url: 'https://coursera.org'       },
+    { name: 'Gmail',    url: 'https://mail.google.com'    },
+  ];
 
-    function getFavicon(url) {
-      try {
-        const domain = new URL(url).hostname;
-        return `https://www.google.com/s2/favicons?domain=${domain}`;
-      } catch {
-        return "";
-      }
+  let positions = JSON.parse(localStorage.getItem('positions_v2')) || null;
+
+  function defaultPositions() {
+    const cols = Math.max(1, Math.floor((grid.clientWidth || 800) / (TILE_W + GAP)));
+    return shortcuts.map((_, i) => ({
+      x: (i % cols) * (TILE_W + GAP),
+      y: Math.floor(i / cols) * (TILE_H + GAP)
+    }));
+  }
+
+  function ensurePositions() {
+    if (!positions || positions.length !== shortcuts.length) {
+      positions = defaultPositions();
+      savePositions();
     }
+  }
 
-    function renderShortcuts() {
-      grid.innerHTML = "";
-      shortcuts.forEach((sc, i) => {
-        const tile = document.createElement("div");
-        tile.className = "tile";
-        tile.innerHTML = `
-          <a href="${sc.url}" target="_self">
-            <img src="${getFavicon(sc.url)}" alt="favicon" />
-            <div>${sc.name}</div>
-          </a>
-          <div class="actions">
-            <button onclick="editShortcut(${i})">✏️</button>
-            <button onclick="deleteShortcut(${i})">🗑️</button>
-          </div>
-        `;
-        grid.appendChild(tile);
+  function savePositions() {
+    localStorage.setItem('positions_v2', JSON.stringify(positions));
+  }
+
+  function saveShortcuts() {
+    localStorage.setItem('shortcuts_v2', JSON.stringify(shortcuts));
+  }
+
+  function getFavicon(url) {
+    try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`; }
+    catch { return ''; }
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function render() {
+    ensurePositions();
+    grid.innerHTML = '';
+
+    // Calculate grid height
+    let maxY = 0;
+    positions.forEach((p, i) => { if (i < shortcuts.length) maxY = Math.max(maxY, p.y + TILE_H); });
+
+    shortcuts.forEach((sc, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.dataset.index = i;
+      tile.style.left = positions[i].x + 'px';
+      tile.style.top  = positions[i].y + 'px';
+      tile.style.zIndex = i + 1;
+
+      tile.innerHTML = `
+        <img src="${getFavicon(sc.url)}" alt="" draggable="false" />
+        <div class="tile-name">${sc.name}</div>
+        <div class="tile-actions">
+          <button class="edit-btn" title="Edit">✏️</button>
+          <button class="del-btn" title="Delete">🗑️</button>
+        </div>
+      `;
+
+      // Click to navigate (only if not dragging)
+      tile.addEventListener('click', (e) => {
+        if (!tile._wasDragged) window.open(sc.url, '_self');
       });
 
-      const addTile = document.createElement("div");
-      addTile.className = "tile plus-tile";
-      addTile.innerHTML = "+";
-      addTile.onclick = addShortcut;
-      grid.appendChild(addTile);
-    }
+      tile.querySelector('.edit-btn').addEventListener('click', e => {
+        e.stopPropagation(); openModal('edit', i);
+      });
+      tile.querySelector('.del-btn').addEventListener('click', e => {
+        e.stopPropagation(); deleteShortcut(i);
+      });
 
-    function addShortcut() {
-      const name = prompt("Shortcut name:");
-      const url = prompt("Shortcut URL (include https://):");
-      if (name && url) {
-        shortcuts.push({ name, url });
-        saveShortcuts();
-      }
-    }
+      makeDraggable(tile, i);
+      grid.appendChild(tile);
+    });
 
-    function editShortcut(index) {
-      const name = prompt("Edit name:", shortcuts[index].name);
-      const url = prompt("Edit URL:", shortcuts[index].url);
-      if (name && url) {
-        shortcuts[index] = { name, url };
-        saveShortcuts();
-      }
-    }
+    // Plus tile
+    const plusTile = document.createElement('div');
+    plusTile.className = 'plus-tile';
+    const addX = (shortcuts.length % Math.max(1, Math.floor((grid.clientWidth || 800) / (TILE_W + GAP)))) * (TILE_W + GAP);
+    const addY = Math.floor(shortcuts.length / Math.max(1, Math.floor((grid.clientWidth || 800) / (TILE_W + GAP)))) * (TILE_H + GAP);
+    plusTile.style.left = positions.length ? addX + 'px' : '0px';
+    plusTile.style.top  = positions.length ? addY + 'px' : '0px';
+    plusTile.innerHTML = `<div class="plus-icon">+</div><div class="plus-label">Add shortcut</div>`;
+    plusTile.addEventListener('click', () => openModal('add'));
+    grid.appendChild(plusTile);
 
-    function deleteShortcut(index) {
-      if (confirm("Delete this shortcut?")) {
-        shortcuts.splice(index, 1);
-        saveShortcuts();
-      }
-    }
+    grid.style.height = (maxY + TILE_H + GAP + 60) + 'px';
+  }
 
-    function saveShortcuts() {
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
-      renderShortcuts();
-    }
+  // ─── Drag ─────────────────────────────────────────────────────────────────
+  function makeDraggable(tile, index) {
+    let startX, startY, origLeft, origTop, dragging = false, moved = false;
 
-    function changeBackground(input) {
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          document.body.style.backgroundImage = `url('${reader.result}')`;
-          localStorage.setItem("background", reader.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+    const onDown = (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      e.preventDefault();
+      dragging = true;
+      moved = false;
+      tile._wasDragged = false;
 
-    function searchGoogle(event) {
-      event.preventDefault();
-      const query = document.getElementById("search").value.trim();
-      if (query) {
-        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-      }
-    }
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+      origLeft = positions[index].x;
+      origTop  = positions[index].y;
 
-    // Load background from storage
-    const savedBg = localStorage.getItem("background");
-    if (savedBg) {
-      document.body.style.backgroundImage = `url('${savedBg}')`;
-    }
+      tile.classList.add('dragging');
+      tile.style.zIndex = 9999;
 
-    renderShortcuts();
-  </script>
+      const onMove = (e) => {
+        if (!dragging) return;
+        const pt = e.touches ? e.touches[0] : e;
+        const dx = pt.clientX - startX;
+        const dy = pt.clientY - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { moved = true; tile._wasDragged = true; }
+
+        const newX = Math.max(0, origLeft + dx);
+        const newY = Math.max(0, origTop + dy);
+        tile.style.left = newX + 'px';
+        tile.style.top  = newY + 'px';
+        positions[index] = { x: newX, y: newY };
+
+        // Expand grid height if needed
+        const needed = newY + TILE_H + GAP + 60;
+        if (parseInt(grid.style.height) < needed) grid.style.height = needed + 'px';
+      };
+
+      const onUp = () => {
+        dragging = false;
+        tile.classList.remove('dragging');
+        tile.style.zIndex = index + 1;
+        savePositions();
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+      };
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    };
+
+    tile.addEventListener('mousedown', onDown);
+    tile.addEventListener('touchstart', onDown, { passive: false });
+  }
+
+  // ─── Modal ────────────────────────────────────────────────────────────────
+  const overlay   = document.getElementById('modalOverlay');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSub  = document.getElementById('modalSub');
+  const inputName = document.getElementById('inputName');
+  const inputUrl  = document.getElementById('inputUrl');
+  const faviconPreview = document.getElementById('faviconPreview');
+  let   editingIndex = null;
+
+  function openModal(mode, index = null) {
+    editingIndex = index;
+    if (mode === 'add') {
+      modalTitle.textContent = 'Add Shortcut';
+      modalSub.textContent   = 'Add a new site to your dashboard';
+      document.getElementById('modalSave').textContent = 'Add Shortcut';
+      inputName.value = '';
+      inputUrl.value  = '';
+      faviconPreview.innerHTML = '<span>Enter a URL to preview favicon</span>';
+    } else {
+      const sc = shortcuts[index];
+      modalTitle.textContent = 'Edit Shortcut';
+      modalSub.textContent   = 'Update site details';
+      document.getElementById('modalSave').textContent = 'Save Changes';
+      inputName.value = sc.name;
+      inputUrl.value  = sc.url;
+      updateFaviconPreview(sc.url, sc.name);
+    }
+    overlay.classList.add('active');
+    setTimeout(() => inputName.focus(), 100);
+  }
+
+  function closeModal() { overlay.classList.remove('active'); }
+
+  function updateFaviconPreview(url, name = '') {
+    const src = getFavicon(url);
+    if (src) {
+      faviconPreview.innerHTML = `<img src="${src}" alt="" /><span>${name || new URL(url).hostname}</span>`;
+    } else {
+      faviconPreview.innerHTML = '<span>Enter a valid URL</span>';
+    }
+  }
+
+  inputUrl.addEventListener('input', () => {
+    try { updateFaviconPreview(inputUrl.value, inputName.value); } catch {}
+  });
+
+  document.getElementById('modalSave').addEventListener('click', () => {
+    const name = inputName.value.trim();
+    let url = inputUrl.value.trim();
+    if (!name || !url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+    if (editingIndex === null) {
+      shortcuts.push({ name, url });
+      positions.push(getNextFreePosition());
+    } else {
+      shortcuts[editingIndex] = { name, url };
+    }
+    saveShortcuts();
+    savePositions();
+    closeModal();
+    render();
+    showToast(editingIndex === null ? 'Shortcut added!' : 'Shortcut updated!');
+  });
+
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  function getNextFreePosition() {
+    const cols = Math.max(1, Math.floor((grid.clientWidth || 800) / (TILE_W + GAP)));
+    const i = shortcuts.length - 1;
+    return { x: (i % cols) * (TILE_W + GAP), y: Math.floor(i / cols) * (TILE_H + GAP) };
+  }
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
+  function deleteShortcut(i) {
+    shortcuts.splice(i, 1);
+    positions.splice(i, 1);
+    saveShortcuts();
+    savePositions();
+    render();
+    showToast('Shortcut removed');
+  }
+
+  // ─── Background ───────────────────────────────────────────────────────────
+  function changeBackground(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.body.style.backgroundImage = `url('${reader.result}')`;
+      localStorage.setItem('bg_v2', reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const savedBg = localStorage.getItem('bg_v2');
+  if (savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+
+  // ─── Toast ────────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  render();
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
