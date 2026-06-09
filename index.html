@@ -30,7 +30,6 @@
       overflow-x: hidden;
     }
 
-    /* Noise overlay */
     body::before {
       content: '';
       position: fixed;
@@ -46,7 +45,6 @@
       padding: 40px 20px 80px;
     }
 
-    /* HEADER */
     header {
       text-align: center;
       margin-bottom: 32px;
@@ -71,7 +69,6 @@
       text-transform: uppercase;
     }
 
-    /* SEARCH */
     .search-wrap {
       display: flex;
       justify-content: center;
@@ -121,7 +118,6 @@
 
     .search-container button:hover { color: var(--accent); }
 
-    /* GRID / DRAG AREA */
     #shortcutGrid {
       position: relative;
       min-height: 300px;
@@ -129,7 +125,6 @@
       padding: 0 20px;
     }
 
-    /* TILES */
     .tile {
       position: absolute;
       width: 110px;
@@ -137,11 +132,12 @@
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       text-align: center;
-      padding: 14px 8px 10px;
+      padding: 0;
       cursor: default;
       backdrop-filter: blur(10px);
       transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
       user-select: none;
+      overflow: hidden;
     }
 
     .tile:hover {
@@ -157,21 +153,22 @@
       z-index: 9999 !important;
     }
 
-    .tile img {
+    /* The real anchor wraps icon+name so right-click works natively */
+    .tile-link {
+      display: block;
+      padding: 14px 8px 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .tile-link img {
       width: 32px;
       height: 32px;
       margin-bottom: 8px;
       border-radius: 6px;
-    }
-
-    .tile a {
-      text-decoration: none;
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 500;
       display: block;
-      line-height: 1.3;
-      pointer-events: none; /* let drag handle it; we open via click separately */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .tile-name {
@@ -185,7 +182,7 @@
       display: flex;
       justify-content: center;
       gap: 6px;
-      margin-top: 8px;
+      padding: 0 8px 10px;
       opacity: 0;
       transition: opacity 0.2s;
     }
@@ -206,7 +203,6 @@
     .tile-actions button:hover { background: rgba(255,255,255,0.18); color: #fff; }
     .tile-actions .del-btn:hover { background: rgba(255,94,125,0.25); color: var(--danger); border-color: var(--danger); }
 
-    /* DRAG HANDLE */
     .drag-handle {
       display: flex;
       flex-direction: column;
@@ -221,6 +217,8 @@
       transition: background 0.2s;
       height: 100%;
       min-height: 24px;
+      /* Prevent the handle itself from acting as a link */
+      pointer-events: all;
     }
 
     .drag-handle:active { cursor: grabbing; }
@@ -245,7 +243,6 @@
       border-color: rgba(125,249,194,0.3);
     }
 
-    /* ADD TILE */
     .plus-tile {
       width: 110px;
       position: absolute;
@@ -276,7 +273,6 @@
       margin-top: 6px;
     }
 
-    /* ===== MODAL ===== */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -407,7 +403,6 @@
 
     .modal-close:hover { color: var(--text); }
 
-    /* FAVICON PREVIEW IN MODAL */
     .favicon-preview {
       display: flex;
       align-items: center;
@@ -422,7 +417,6 @@
     .favicon-preview img { width: 24px; height: 24px; border-radius: 4px; }
     .favicon-preview span { font-size: 12px; color: var(--muted); }
 
-    /* BG BUTTON */
     .fixed-btns {
       position: fixed;
       bottom: 20px;
@@ -449,7 +443,6 @@
     #add-btn { font-size: 24px; line-height: 1; }
     #bg-input { display: none; }
 
-    /* TOAST */
     .toast {
       position: fixed;
       bottom: 76px;
@@ -524,9 +517,8 @@
 
 <script>
   const grid = document.getElementById('shortcutGrid');
-  const TILE_W = 110, TILE_H = 120, GAP = 16, COLS_BASE = 8;
+  const TILE_W = 110, TILE_H = 130, GAP = 16;
 
-  // ─── State ───────────────────────────────────────────────────────────────
   let shortcuts = JSON.parse(localStorage.getItem('shortcuts_v2')) || [
     { name: 'YouTube',  url: 'https://youtube.com'        },
     { name: 'ChatGPT',  url: 'https://chat.openai.com'    },
@@ -565,12 +557,10 @@
     catch { return ''; }
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   function render() {
     ensurePositions();
     grid.innerHTML = '';
 
-    // Calculate grid height
     let maxY = 0;
     positions.forEach((p, i) => { if (i < shortcuts.length) maxY = Math.max(maxY, p.y + TILE_H); });
 
@@ -582,9 +572,12 @@
       tile.style.top  = positions[i].y + 'px';
       tile.style.zIndex = i + 1;
 
+      // Real <a> wraps icon+name → browser gives native "Open in new tab" on right-click
       tile.innerHTML = `
-        <img src="${getFavicon(sc.url)}" alt="" draggable="false" />
-        <div class="tile-name">${sc.name}</div>
+        <a class="tile-link" href="${sc.url}" target="_self" draggable="false">
+          <img src="${getFavicon(sc.url)}" alt="" draggable="false" />
+          <div class="tile-name">${sc.name}</div>
+        </a>
         <div class="tile-actions">
           <div class="drag-handle" title="Drag to move">
             <div class="dot-row"><span class="dot"></span><span class="dot"></span></div>
@@ -596,19 +589,28 @@
         </div>
       `;
 
-      // Click to navigate (only if not dragging)
-      tile.addEventListener('click', (e) => {
-        if (!tile._wasDragged) window.open(sc.url, '_self');
+      const link = tile.querySelector('.tile-link');
+
+      // Prevent the link from navigating while dragging
+      link.addEventListener('click', (e) => {
+        if (tile._wasDragged) {
+          e.preventDefault();
+          tile._wasDragged = false;
+        }
       });
+
+      // Drag handle must NOT trigger link navigation
+      const handle = tile.querySelector('.drag-handle');
+      handle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
 
       tile.querySelector('.edit-btn').addEventListener('click', e => {
-        e.stopPropagation(); openModal('edit', i);
+        e.preventDefault(); e.stopPropagation(); openModal('edit', i);
       });
       tile.querySelector('.del-btn').addEventListener('click', e => {
-        e.stopPropagation(); deleteShortcut(i);
+        e.preventDefault(); e.stopPropagation(); deleteShortcut(i);
       });
 
-      makeDraggable(tile, tile.querySelector('.drag-handle'), i);
+      makeDraggable(tile, handle, i);
       grid.appendChild(tile);
     });
 
@@ -616,14 +618,12 @@
     grid.style.height = Math.max(minGridH, maxY + TILE_H + GAP + 200) + 'px';
   }
 
-  // ─── Drag ─────────────────────────────────────────────────────────────────
   function makeDraggable(tile, handle, index) {
-    let startX, startY, origLeft, origTop, dragging = false, moved = false;
+    let startX, startY, origLeft, origTop, dragging = false;
 
     const onDown = (e) => {
       e.preventDefault();
       dragging = true;
-      moved = false;
       tile._wasDragged = false;
 
       const point = e.touches ? e.touches[0] : e;
@@ -640,7 +640,7 @@
         const pt = e.touches ? e.touches[0] : e;
         const dx = pt.clientX - startX;
         const dy = pt.clientY - startY;
-        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { moved = true; tile._wasDragged = true; }
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) tile._wasDragged = true;
 
         const maxX = grid.clientWidth - TILE_W - 60;
         const maxY = grid.clientHeight - TILE_H - 80;
@@ -672,12 +672,11 @@
     handle.addEventListener('touchstart', onDown, { passive: false });
   }
 
-  // ─── Modal ────────────────────────────────────────────────────────────────
-  const overlay   = document.getElementById('modalOverlay');
+  const overlay    = document.getElementById('modalOverlay');
   const modalTitle = document.getElementById('modalTitle');
-  const modalSub  = document.getElementById('modalSub');
-  const inputName = document.getElementById('inputName');
-  const inputUrl  = document.getElementById('inputUrl');
+  const modalSub   = document.getElementById('modalSub');
+  const inputName  = document.getElementById('inputName');
+  const inputUrl   = document.getElementById('inputUrl');
   const faviconPreview = document.getElementById('faviconPreview');
   let   editingIndex = null;
 
@@ -740,8 +739,6 @@
   document.getElementById('modalCancel').addEventListener('click', closeModal);
   document.getElementById('modalClose').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-
-  // Keyboard
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
   function getNextFreePosition() {
@@ -750,7 +747,6 @@
     return { x: (i % cols) * (TILE_W + GAP), y: Math.floor(i / cols) * (TILE_H + GAP) };
   }
 
-  // ─── Delete ───────────────────────────────────────────────────────────────
   function deleteShortcut(i) {
     shortcuts.splice(i, 1);
     positions.splice(i, 1);
@@ -760,7 +756,6 @@
     showToast('Shortcut removed');
   }
 
-  // ─── Background ───────────────────────────────────────────────────────────
   function changeBackground(input) {
     const file = input.files[0];
     if (!file) return;
@@ -775,7 +770,6 @@
   const savedBg = localStorage.getItem('bg_v2');
   if (savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
-  // ─── Toast ────────────────────────────────────────────────────────────────
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -783,7 +777,6 @@
     setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  // ─── Init ─────────────────────────────────────────────────────────────────
   render();
 </script>
 </body>
